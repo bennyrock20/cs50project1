@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+{% block title %} Index {% endblock %}
+{% block style %}
+<style type="text/css">
+  @font-face {
+    font-family: 'Glyphicons Halflings';
+    src:url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/fonts/glyphicons-halflings-regular.eot');
+    src:url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
+      url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/fonts/glyphicons-halflings-regular.woff') format('woff'),
+      url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/fonts/glyphicons-halflings-regular.ttf') format('truetype'),
+      url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+  }
+</style>
+{% endblock %}
+{% block content %}
+
+     <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+      <h5 class="my-0 mr-md-auto font-weight-normal">CS50</h5>
+      <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="/">Books</a>
+      </nav>
+      <a class="btn btn-outline-primary" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-4">Books Details</h1>
+      </div>
+    </div>
+
+  <div class="container">
+    <div class="card-deck mb-3 text-center">
+            <div class="card mb-4 box-shadow">
+              <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ book[2]}}</h4>
+              </div>
+              <div class="card-body">
+                <ul class="list-unstyled mt-3 mb-4">
+                  <li>isbn: {{ book[1]}}</li>
+                  <li>Author: {{ book[3]}}</li>
+                  <li>Year: {{ book[4]}}</li>
+                </ul>
+              </div>
+
+            </div>
+    </div>
+
+<div class="col-12">
+  {% for review in reviews %}
+  <div class="col-12" style="
+    background: #f7f7f7;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px 0;
+">
+    <p>By: {{review.user_id}}</p>
+    <p>
+      <select class="rating" value="{{ review.rating }}">
+        <option value="1" {% if review.rating == 1 %}selected{% endif%}>1</option>
+        <option value="2" {% if review.rating == 2 %}selected{% endif%}>2</option>
+        <option value="3" {% if review.rating == 3 %}selected{% endif%}>3</option>
+        <option value="4" {% if review.rating == 4 %}selected{% endif%}>4</option>
+        <option value="5" {% if review.rating == 5 %}selected{% endif%}>5</option>
+      </select>
+    </p>
+    <p>{{review.comment}}</p>
+
+  </div>
+  {% endfor %}
+
+{% if has_reviewed == None %}
+<div class="col-12 text-center">
+  <form class="form" method="POST" action="/make-review">
+    <div class="col-12" style="padding:10px;">
+      <textarea name="comment" class="form-control mr-sm-2" placeholder="Leave a review"></textarea>
+    </div>
+    <div class="col-12 text-right" style="padding:10px;">
+      <select name="rating" class="rating" required>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+    <div class="col-12 text-right" style="padding:5px;">
+       <button type="submit" class="btn btn-primary" >Review</button>
+    </div>
+    <input type="hidden" name="book_id" value="{{ book[0]}}"/>
+</form>
+</div>
+{% endif %}
+
+</div>
+
+    <footer class="pt-4 my-md-5 pt-md-5 border-top">
+        <div class="row">
+          <div class="col-12 col-md">
+            <img class="mb-2" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="24" height="24">
+            <small class="d-block mb-3 text-muted">&copy; 2018-2019</small>
+          </div>
+
+        </div>
+      </footer>
+  {% endblock %}
+  {% block javascript%}
+    <script type="text/javascript">
+       $(function() {
+          $('.rating').barrating({
+            theme: 'bootstrap-stars'
+          });
+       });
+    </script>
+  {% endblock %}

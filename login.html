@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %} Login {% endblock %}
+{% block content %}
+<div class="container" s="background:#957bbe;">
+<div class="col-4" style="margin: 100px auto;">
+  <form novalidate style="padding:10px; background:#eee" method="post">
+    <div class="form-group">
+      <input type="text" name="email"  required class="form-control" placeholder="Email"/>
+    </div>
+    <div class="form-group">
+      <input type="password" name="password" required class="form-control" placeholder="Password"/>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+
+    <div class="form-group">
+      <div class="col-md-12 control">
+        <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
+            Don't have an account!
+        <a href="/register">
+            Sign Up Here
+        </a>
+        </div>
+     </div>
+    </div>
+  </form>
+</div>
+</div>
+{% endblock %}
