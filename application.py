@@ -1,12 +1,14 @@
 import os
-from flask import Flask, session, render_template, request, redirect,url_for
+from flask import Flask, session, render_template, request, redirect,url_for,jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey
 from sqlalchemy import create_engine
 import csv
-
+from decimal import *
+import requests
+import json
 
 app = Flask(__name__)
 
@@ -52,14 +54,54 @@ def book(book_id):
     if book is None:
         return redirect(url_for('index'))
 
-    reviews = db.execute("SELECT * FROM reviews WHERE book_id = :book_id  limit 100", {"book_id": book_id}).fetchall()
+    reviews = db.execute("SELECT * FROM reviews JOIN users ON reviews.user_id = users.user_id WHERE book_id = :book_id limit 100", {"book_id": book_id}).fetchall()
 
     user_id = session.get('user')
 
     has_reviewed = db.execute("SELECT * FROM reviews WHERE book_id = :book_id  and user_id =:user_id limit 1", {"book_id": book_id, "user_id" : user_id}).fetchone()
 
-    return render_template("book.html", book=book, reviews = reviews, has_reviewed = has_reviewed)
+    res = requests.get("https://www.goodreads.com/book/review_counts.json",params ={"key": "TQamOYJgVhdWxbL3lzg", "isbns": book.isbn});
+    good_reads_average_rating =0
+    good_reads_work_ratings_count = 0
+    if res:
+        good_reads = res.json()
+        print(good_reads["books"][0]["average_rating"])
+        good_reads_work_ratings_count = good_reads["books"][0]["ratings_count"]
+        good_reads_work_ratings_rating = Decimal(good_reads["books"][0]["average_rating"])
 
+
+
+    #good_reads_average_rating
+
+
+    return render_template("book.html", book=book, reviews = reviews, has_reviewed = has_reviewed, good_reads_work_ratings_rating = good_reads_work_ratings_rating, good_reads_work_ratings_count = good_reads_work_ratings_count)
+
+@app.route("/api/<string:isbn>")
+def api(isbn):
+    """Api single Book by isbn"""
+
+    # Make sure Book exists.
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn  limit 1", {"isbn": isbn}).fetchone()
+    if book is None:
+        return jsonify({"error": "Invalid isbn"}), 422
+
+    reviews = db.execute("SELECT  COUNT(*),AVG(rating) FROM reviews WHERE book_id = :book_id GROUP BY book_id HAVING COUNT(*) > 0", {"book_id": book.id}).fetchone()
+
+    review_count ="0"
+    average_score ="0"
+
+    if reviews != None:
+        review_count = str(reviews[0])
+        average_score = str(reviews[1].quantize(Decimal(10) ** -2 ))
+
+    return jsonify({
+            "isbn": book.isbn,
+            "title": book.title,
+            "author": book.author,
+            "year": book.year,
+            "review_count": review_count,
+            "average_score": average_score
+        })
 
 
 @app.route("/login", methods=['post','get'])
